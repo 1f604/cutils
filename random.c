@@ -5,6 +5,7 @@
 typedef unsigned char u8;
 
 const unsigned char generate_byte(const unsigned char upper_bound){ // generates numbers in the range [0, upper_bound] - all inclusive!
+    // This function has no dependencies.
     // I have thoroughly tested this function and informally proved that it is correct to my satisfaction.
     // this function will reject up to half of all generated numbers
     // this is a bit inefficient, but is ok when speed doesn't matter
@@ -29,9 +30,53 @@ const unsigned char generate_byte(const unsigned char upper_bound){ // generates
     }
 }
 
+
+void choose_without_replacement( 
+    // this function is limited to arrays of up to 255 elements due to generate_byte, see below
+    #define ELEMENT_TYPE u8
+    // the #define macro is to make this function generic, so feel free to replace u8 with some other type.
+    const ELEMENT_TYPE* input_array,
+    ELEMENT_TYPE* output_array, // caller must allocate this, but does not need to initialize it
+    int input_array_length, // number of elements in input and output array
+    int output_array_length, // number of elements in input and output array
+    int elements_to_pick // number of elements to randomly pick from the input array
+){
+    assert(input_array_length == output_array_length);
+    assert(elements_to_pick <= input_array_length);
+    assert(elements_to_pick < 256); // limitation due to generate_byte
+    // first, copy input array into output array
+    memcpy(output_array, input_array, sizeof(ELEMENT_TYPE) * input_array_length);
+    // next, pick random elements and swap them to the front of the output array
+    // this is basically a Knuth shuffle
+    for (int i = 0; i < elements_to_pick; i++) {
+        // initially we choose between 0 and n-1
+        // next we choose between 1 and n-1, and so on
+        unsigned char rand_num = generate_byte(input_array_length - 1 - i); 
+        int random_index = i + rand_num;
+        // swap the ith element with the randomly chosen element
+        ELEMENT_TYPE ith_element = output_array[i];
+        output_array[i] = output_array[random_index];
+        output_array[random_index] = ith_element;
+    }
+    return;    
+}
+
+
 int main(){
+    // demo generate_byte
     for (int i = 0; i < 5; i++){
         u8 x = generate_byte(5);
         printf("random number: %u\n", x);
     }
+    // demo choose_without_replacement
+    u8 input_array[10] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
+    u8 output_array[10];
+    int elements_to_pick = 5;
+    choose_without_replacement(input_array, output_array, 10, 10, elements_to_pick);
+
+    printf("new array: [ ");
+    for (int i = 0; i < elements_to_pick; i++){
+        printf("%u ", output_array[i]);
+    }
+    printf("]\n");
 }
