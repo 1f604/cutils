@@ -58,7 +58,7 @@ void choose_without_replacement(
         output_array[i] = output_array[random_index];
         output_array[random_index] = ith_element;
     }
-    return;    
+    return;
 }
 
 
